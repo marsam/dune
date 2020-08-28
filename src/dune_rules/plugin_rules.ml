@@ -10,15 +10,16 @@ let meta_file ~dir { name; libraries = _; site = _, (pkg, site); _ } =
   let meta_file = Path.Build.relative dir "META" in
   meta_file
 
+let resolve_libs ~sctx t =
+  Result.List.map t.libraries
+    ~f:(Lib.DB.resolve (Super_context.public_libs sctx))
+
+
 let setup_rules ~sctx ~dir t =
   let meta = meta_file ~dir t in
   Build.delayed (fun () ->
-      let libs =
-        Result.List.map t.libraries
-          ~f:(Lib.DB.resolve (Super_context.public_libs sctx))
-      in
       let requires =
-        match libs with
+        match resolve_libs ~sctx t with
         | Ok l -> List.map l ~f:(fun lib -> Lib_name.to_string (Lib.name lib))
         | Error e -> raise e
       in
@@ -39,11 +40,18 @@ let setup_rules ~sctx ~dir t =
   |> Super_context.add_rule sctx ~dir
 
 let install_rules ~sctx ~dir ({ name; site = loc, (pkg, site); _ } as t) =
-  let meta = meta_file ~dir t in
-  [ ( Some loc
-    , Install.Entry.make_with_site
-        ~dst:(sprintf "%s/%s" (Package.Name.to_string name) "META")
-        (Site { pkg; site })
-        (Super_context.get_site_of_packages sctx)
-        meta )
-  ]
+  if not t.optional ||
+     begin match resolve_libs ~sctx t with
+     | Ok _ -> true
+     | Error _ -> false
+     end
+  then
+    let meta = meta_file ~dir t in
+    [ ( Some loc
+      , Install.Entry.make_with_site
+          ~dst:(sprintf "%s/%s" (Package.Name.to_string name) "META")
+          (Site { pkg; site })
+          (Super_context.get_site_of_packages sctx)
+          meta )
+    ]
+  else []

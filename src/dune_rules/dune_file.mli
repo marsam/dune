@@ -185,6 +185,7 @@ module Plugin : sig
     ; name : Package.Name.t
     ; libraries : (Loc.t * Lib_name.t) list
     ; site : Loc.t * (Package.Name.t * Section.Site.t)
+    ; optional : bool
     }
 end
 

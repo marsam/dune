@@ -828,6 +828,7 @@ module Plugin = struct
     ; name : Package.Name.t
     ; libraries : (Loc.t * Lib_name.t) list
     ; site : Loc.t * (Package.Name.t * Section.Site.t)
+    ; optional : bool
     }
 
   let decode =
@@ -836,8 +837,9 @@ module Plugin = struct
        and+ libraries = field "libraries" (repeat (located Lib_name.decode))
        and+ site =
          field "site" (located (pair Package.Name.decode Section.Site.decode))
-       and+ package = Pkg.field "package" in
-       { name; libraries; site; package })
+       and+ package = Pkg.field "package"
+       and+ optional = field_b "optional" in
+       { name; libraries; site; package; optional })
 end
 
 module Install_conf = struct

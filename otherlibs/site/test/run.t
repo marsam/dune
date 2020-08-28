@@ -3,7 +3,7 @@ Test embedding of sites locations information
 
   $ mkdir -p a b c
 
-  $ for i in a b; do
+  $ for i in a b d; do
   > mkdir -p $i
   > cat >$i/dune-project <<EOF
   > (lang dune 2.8)
@@ -59,6 +59,32 @@ Test embedding of sites locations information
   > EOF
 
   $ cat >b/info.txt <<EOF
+  > Lorem
+  > EOF
+
+  $ cat >d/dune <<EOF
+  > (library
+  >  (public_name d)
+  >  (libraries c.register dune-site non-existent-library)
+  >  (optional)
+  > )
+  > (generate_module (module sites) (sites d))
+  > (plugin (name c-plugins-d) (libraries d) (site (c plugins)) (optional))
+  > (install (section (site (d data))) (files info.txt))
+  > EOF
+
+  $ cat >d/d.ml <<EOF
+  > let v = "d"
+  > let () = Printf.printf "run d\n%!"
+  > let () = C_register.d_registered := true
+  > let () = List.iter (Printf.printf "d: %s\n%!") Sites.Sites.data
+  > let () =
+  >     let test d = Sys.file_exists (Filename.concat d "info.txt") in
+  >     let found = List.exists test Sites.Sites.data in
+  >     Printf.printf "info.txt is found: %d\n%!" found
+  > EOF
+
+  $ cat >d/info.txt <<EOF
   > Lorem
   > EOF
 

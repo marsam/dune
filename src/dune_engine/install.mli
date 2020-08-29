@@ -1,5 +1,6 @@
 (** Opam install file *)
 open! Stdune
+
 module DuneSection = Section
 
 module Dst : sig

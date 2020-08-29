@@ -68,9 +68,7 @@ module type File_operations = sig
     -> executable:bool
     -> special_file:Special_file.t option
     -> package:Package.Name.t
-    -> get_location:(Section.t -> Package.Name.t -> Stdune.Path.t)
-    -> hardcodedOcamlPath:Dune_engine.Artifact_substitution.hardcodedOcamlPath
-    -> stdlib:Stdune.Path.t
+    -> conf:Dune_engine.Artifact_substitution.conf
     -> unit Fiber.t
 
   val mkdir_p : Path.t -> unit
@@ -85,8 +83,7 @@ module type Workspace = sig
 end
 
 module File_ops_dry_run : File_operations = struct
-  let copy_file ~src ~dst ~executable ~special_file:_ ~package:_ ~get_location:_
-      ~hardcodedOcamlPath:_ ~stdlib:_ =
+  let copy_file ~src ~dst ~executable ~special_file:_ ~package:_ ~conf:_ =
     Format.printf "Copying %s to %s (executable: %b)\n"
       (Path.to_string_maybe_quoted src)
       (Path.to_string_maybe_quoted dst)
@@ -169,7 +166,8 @@ module File_ops_real (W : Workspace) : File_operations = struct
           Pp.render_ignore_tags ppf (Dune_rules.Meta.pp meta.entries))
 
   let replace_sites
-      ~(get_location : Dune_engine.Section.t -> Package.Name.t -> Stdune.Path.t) dp =
+      ~(get_location : Dune_engine.Section.t -> Package.Name.t -> Stdune.Path.t)
+      dp =
     match
       List.find_map dp ~f:(function
         | Dune_lang.List [ Atom (A "name"); Atom (A name) ] -> Some name
@@ -233,8 +231,8 @@ module File_ops_real (W : Workspace) : File_operations = struct
               Format.pp_print_cut ppf ());
           Format.pp_close_box ppf ())
 
-  let copy_file ~src ~dst ~executable ~special_file ~package ~get_location
-      ~hardcodedOcamlPath ~stdlib =
+  let copy_file ~src ~dst ~executable ~special_file ~package
+      ~(conf : Dune_engine.Artifact_substitution.conf) =
     let chmod =
       if executable then
         fun _ ->
@@ -253,19 +251,10 @@ module File_ops_real (W : Workspace) : File_operations = struct
         | Some META -> copy_special_file ~src ~package ~ic ~oc ~f:process_meta
         | Some Dune_package ->
           copy_special_file ~src ~package ~ic ~oc
-            ~f:(process_dune_package ~get_location)
+            ~f:(process_dune_package ~get_location:conf.get_location)
         | None ->
-          Dune_engine.Artifact_substitution.copy
-            ~conf:
-              { get_vcs
-              ; get_location
-              ; get_configPath =
-                  (function
-                  | SourceRoot -> None
-                  | Stdlib -> Some stdlib)
-              ; hardcodedOcamlPath
-              }
-            ~input_file:src ~input:(input ic) ~output:(output oc))
+          Dune_engine.Artifact_substitution.copy ~conf ~input_file:src
+            ~input:(input ic) ~output:(output oc))
 
   let remove_if_exists dst =
     if Path.exists dst then (
@@ -490,13 +479,11 @@ let install_uninstall ~what =
                 get_dirs context ~prefix_from_command_line
                   ~libdir_from_command_line
               in
-              let hardcodedOcamlPath =
-                if relocatable then
-                  Dune_engine.Artifact_substitution.Relocatable prefix
-                else
-                  Dune_engine.Artifact_substitution.Hardcoded context.default_ocamlpath
+              let conf =
+                Dune_engine.Artifact_substitution.conf_for_install ~relocatable
+                  ~default_ocamlpath:context.default_ocamlpath
+                  ~stdlib_dir:context.stdlib_dir ~prefix ~libdir ~mandir
               in
-              let stdlib = context.stdlib_dir in
               Fiber.sequential_iter entries_per_package
                 ~f:(fun (package, entries) ->
                   let paths =
@@ -518,16 +505,8 @@ let install_uninstall ~what =
                         let executable =
                           Section.should_set_executable_bit entry.section
                         in
-                        let get_location section package =
-                          let paths =
-                            Install.Section.Paths.make ~package ~destdir:prefix
-                              ?libdir ?mandir ()
-                          in
-                          Install.Section.Paths.get paths section
-                        in
                         Ops.copy_file ~src:entry.src ~dst ~executable
-                          ~special_file ~package ~get_location
-                          ~hardcodedOcamlPath ~stdlib
+                          ~special_file ~package ~conf
                       ) else (
                         Ops.remove_if_exists dst;
                         files_deleted_in := Path.Set.add !files_deleted_in dir;

@@ -50,6 +50,60 @@ type conf =
   ; hardcodedOcamlPath : hardcodedOcamlPath
   }
 
+let conf_of_context (context : Build_context.t option) =
+  let get_vcs = File_tree.nearest_vcs in
+  match context with
+  | None ->
+    { get_vcs
+    ; get_location = (fun _ _ -> Code_error.raise "no context available" [])
+    ; get_configPath = (fun _ -> Code_error.raise "no context available" [])
+    ; hardcodedOcamlPath = Hardcoded []
+    }
+  | Some context ->
+    let get_location = Install.Section.Paths.get_local_location context.name in
+    let get_configPath = function
+      | SourceRoot -> Some (Path.source Path.Source.root)
+      | Stdlib -> Some context.stdlib_dir
+    in
+    let hardcodedOcamlPath =
+      let install_dir = Config.local_install_dir ~context:context.name in
+      let install_dir = Path.build (Path.Build.relative install_dir "lib") in
+      Hardcoded (install_dir :: context.default_ocamlpath)
+    in
+    { get_vcs = File_tree.nearest_vcs
+    ; get_location
+    ; get_configPath
+    ; hardcodedOcamlPath
+    }
+
+let conf_for_install ~relocatable ~default_ocamlpath ~stdlib_dir ~prefix ~libdir
+    ~mandir =
+  let get_vcs = File_tree.nearest_vcs in
+  let hardcodedOcamlPath =
+    if relocatable then
+      Relocatable prefix
+    else
+      Hardcoded default_ocamlpath
+  in
+  let get_location section package =
+    let paths =
+      Install.Section.Paths.make ~package ~destdir:prefix ?libdir ?mandir ()
+    in
+    Install.Section.Paths.get paths section
+  in
+  let get_configPath = function
+    | SourceRoot -> None
+    | Stdlib -> Some stdlib_dir
+  in
+  { get_location; get_vcs; get_configPath; hardcodedOcamlPath }
+
+let conf_dummy =
+  { get_vcs = (fun _ -> None)
+  ; get_location = (fun _ _ -> Path.root)
+  ; get_configPath = (fun _ -> None)
+  ; hardcodedOcamlPath = Hardcoded []
+  }
+
 let to_dyn = function
   | Vcs_describe p -> Dyn.Variant ("Vcs_describe", [ Path.Source.to_dyn p ])
   | Location (kind, lib_name) ->

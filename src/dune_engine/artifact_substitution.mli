@@ -20,13 +20,26 @@ type hardcodedOcamlPath =
   | Hardcoded of Path.t list
   | Relocatable of Path.t
 
-type conf =
+type conf = private
   { get_vcs : Path.Source.t -> Vcs.t option
   ; get_location : Section.t -> Package.Name.t -> Path.t
   ; get_configPath : configpath -> Path.t option
   ; hardcodedOcamlPath : hardcodedOcamlPath
         (** Initial prefix of installation when relocatable chosen *)
   }
+
+val conf_of_context : Build_context.t option -> conf
+
+val conf_for_install :
+     relocatable:bool
+  -> default_ocamlpath:Path.t list
+  -> stdlib_dir:Path.t
+  -> prefix:Path.t
+  -> libdir:Path.t option
+  -> mandir:Path.t option
+  -> conf
+
+val conf_dummy : conf
 
 val to_dyn : t -> Dyn.t
 

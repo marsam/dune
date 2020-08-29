@@ -124,5 +124,4 @@ understood by dune language."))
  (name dune-site)
  (depends (dune-private-libs (= :version)))
  (synopsis "Embed locations informations inside executable and libraries")
- (description "\
-"))
+ (description ""))

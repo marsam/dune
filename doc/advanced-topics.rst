@@ -87,15 +87,14 @@ Main executable (C)
 .. code:: scheme
 
    (executable
-      (public_name c)
-      (modules sites c)
-      (libraries c.register dune-site dune-site.plugins))
+    (public_name c)
+    (modules sites c)
+    (libraries c.register dune-site dune-site.plugins))
 
    (library
-       (public_name c.register)
-       (name c_register)
-       (modules c_register)
-   )
+    (public_name c.register)
+    (name c_register)
+    (modules c_register))
 
    (generate_module (module sites)  (plugins (c plugins)))
 
@@ -130,16 +129,18 @@ One plugin (B)
 
   (library
    (public_name b)
-   (libraries c.register)
-  )
+   (libraries c.register))
 
-  (plugin (name b) (libraries b) (site (c plugins)))
+  (plugin
+   (name b)
+   (libraries b)
+   (site (c plugins)))
 
 - The code of the plugin ``b.ml``:
 
 .. code:: ocaml
 
-  let () = Queue.add (fun () -> print_endline "B is doing something") C_register.todo
+   let () = Queue.add (fun () -> print_endline "B is doing something") C_register.todo
 
 
 Dynamic loading of packages with findlib

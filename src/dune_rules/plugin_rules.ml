@@ -14,7 +14,6 @@ let resolve_libs ~sctx t =
   Result.List.map t.libraries
     ~f:(Lib.DB.resolve (Super_context.public_libs sctx))
 
-
 let setup_rules ~sctx ~dir t =
   let meta = meta_file ~dir t in
   Build.delayed (fun () ->
@@ -40,11 +39,12 @@ let setup_rules ~sctx ~dir t =
   |> Super_context.add_rule sctx ~dir
 
 let install_rules ~sctx ~dir ({ name; site = loc, (pkg, site); _ } as t) =
-  if not t.optional ||
-     begin match resolve_libs ~sctx t with
-     | Ok _ -> true
-     | Error _ -> false
-     end
+  if
+    (not t.optional)
+    ||
+    match resolve_libs ~sctx t with
+    | Ok _ -> true
+    | Error _ -> false
   then
     let meta = meta_file ~dir t in
     [ ( Some loc
@@ -54,4 +54,5 @@ let install_rules ~sctx ~dir ({ name; site = loc, (pkg, site); _ } as t) =
           (Super_context.get_site_of_packages sctx)
           meta )
     ]
-  else []
+  else
+    []

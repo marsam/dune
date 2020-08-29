@@ -21,9 +21,8 @@ val create :
 
 val context : t -> Context.t
 
+(** Context env with additional variables computed from packages *)
 val context_env : t -> Env.t
-
-(* Context env with additional variables computed from packages *)
 
 val stanzas : t -> Dune_file.Stanzas.t Dir_with_dune.t list
 

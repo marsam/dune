@@ -281,23 +281,17 @@ let handle_special_libs cctx =
           process_libs libs
             ~to_link_rev:(LM.Lib lib :: to_link_rev)
             ~force_linkall
-        | Dune_site { data_module; plugins = false } ->
+        | Dune_site { data_module; plugins } ->
           let module_ =
-            generate_and_compile_module cctx ~name:data_module ~lib
-              ~code:(Build.return (dune_site_code ()))
-              ~requires:(Ok [ lib ])
-              ~precompiled_cmi:true
-          in
-          process_libs libs
-            ~to_link_rev:(LM.Lib lib :: Module (obj_dir, module_) :: to_link_rev)
-            ~force_linkall
-        | Dune_site { data_module; plugins = true } ->
-          let module_ =
-            generate_and_compile_module cctx ~name:data_module ~lib
-              ~code:
-                (Build.return
-                   (dune_site_plugins_code ~libs:all_libs
-                      ~builtins:(Findlib.builtins ctx.Context.findlib)))
+            let code =
+              if plugins then
+                Build.return
+                  (dune_site_plugins_code ~libs:all_libs
+                     ~builtins:(Findlib.builtins ctx.Context.findlib))
+              else
+                Build.return (dune_site_code ())
+            in
+            generate_and_compile_module cctx ~name:data_module ~lib ~code
               ~requires:(Ok [ lib ])
               ~precompiled_cmi:true
           in

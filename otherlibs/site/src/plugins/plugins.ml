@@ -64,14 +64,14 @@ let rec get_plugin directory plugins requires entries =
     get_plugin directory plugins (value :: requires) entries
   | Rule _ :: entries -> get_plugin directory plugins requires entries
 
-exception Lib_not_found of string
+exception LibraryNotFound of string
 
 let rec find_library ~rest meta =
   match rest with
   | [] -> meta
   | pkg :: rest ->
     let rec aux pkg = function
-      | [] -> raise (Lib_not_found pkg)
+      | [] -> raise (LibraryNotFound pkg)
       | Meta_parser.Package { name = Some name; entries } :: _
         when String.equal name pkg ->
         find_library ~rest entries
@@ -144,8 +144,6 @@ let load file ~pkg =
       raise exn
   in
   { Meta_parser.name = Some pkg; entries }
-
-exception LibraryNotFound of string
 
 let meta_fn = "META"
 
@@ -220,3 +218,12 @@ end) : S = struct
 end
 
 let load = load_requires
+
+let available name =
+  Hashtbl.mem (Lazy.force loaded_libraries) name
+  ||
+  let ocamlpath = Lazy.force Helpers.ocamlpath in
+  try
+    ignore (lookup_and_summarize ocamlpath name);
+    true
+  with _ -> false

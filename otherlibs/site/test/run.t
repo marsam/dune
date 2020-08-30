@@ -114,6 +114,7 @@ Test embedding of sites locations information
   >       | Some d -> Printf.printf "sourceroot is %S\n%!" d
   >       | None -> Printf.printf "no sourceroot\n%!"
   > let () = List.iter (Printf.printf "c: %s\n%!") Sites.Sites.data
+  > let () = Printf.printf "b is available: %b\n%!" (Dune_site_plugins.V1.available "b")
   > let () = Sites.Plugins.Plugins.load_all ()
   > let () = Printf.printf "run c: b_registered:%b\n%!" !C_register.b_registered
   > EOF
@@ -137,6 +138,7 @@ Once installed, we have the sites information:
   run c: a linked b_registered:false
   no sourceroot
   c: $TESTCASE_ROOT/_install/share/c/data
+  b is available: true
   run b
   b: $TESTCASE_ROOT/_install/share/b/data
   info.txt is found: true
@@ -155,6 +157,7 @@ Once installed, we have the sites information:
   run c: a linked b_registered:false
   no sourceroot
   c: $TESTCASE_ROOT/_install_relocatable/share/c/data
+  b is available: true
   run b
   b: $TESTCASE_ROOT/_install_relocatable/share/b/data
   info.txt is found: true
@@ -173,6 +176,7 @@ Once installed, we have the sites information:
   run c: a linked b_registered:false
   no sourceroot
   c: $TESTCASE_ROOT/_install_relocatable2/share/c/data
+  b is available: true
   run b
   b: $TESTCASE_ROOT/_install_relocatable2/share/b/data
   info.txt is found: true
@@ -190,6 +194,7 @@ development because b is not promoted
   run c: a linked b_registered:false
   sourceroot is "$TESTCASE_ROOT"
   c: $TESTCASE_ROOT/_build/install/default/share/c/data
+  b is available: true
   run b
   info.txt is found: false
   run c: b_registered:true
@@ -204,6 +209,7 @@ Test within dune rules
   run c: a linked b_registered:false
   sourceroot is "$TESTCASE_ROOT"
   c: $TESTCASE_ROOT/_build/install/default/share/c/data
+  b is available: true
   run b
   b: $TESTCASE_ROOT/_build/install/default/share/b/data
   info.txt is found: true
@@ -218,6 +224,7 @@ Test with dune exec
   run c: a linked b_registered:false
   sourceroot is "$TESTCASE_ROOT"
   c: $TESTCASE_ROOT/_build/install/default/share/c/data
+  b is available: true
   run b
   b: $TESTCASE_ROOT/_build/install/default/share/b/data
   info.txt is found: true

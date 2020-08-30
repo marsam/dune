@@ -13,3 +13,5 @@ module Make (X : sig
 end) : S
 
 val load : string -> unit
+
+val available : string -> bool

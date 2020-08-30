@@ -290,13 +290,12 @@ let decode ~lang ~dir =
   let open Dune_lang.Decoder in
   let+ name = field "name" Package.Name.decode
   and+ version = field_o "version" string
-  and+ loc, sections =
-    located
-      (field ~default:[] "sections" (repeat (pair Section.decode Dpath.decode)))
-  and+ loc2, sites =
-    located
-      (field ~default:[] "sites"
-         (repeat (pair Section.Site.decode Section.decode)))
+  and+ sections =
+    field ~default:[] "sections"
+      (repeat (pair (located Section.decode) Dpath.decode))
+  and+ sites =
+    field ~default:[] "sites"
+      (repeat (pair (located Section.Site.decode) Section.decode))
   and+ entries = leftover_fields_as_sums (Entry.cstrs ~lang ~dir) in
   let entries =
     List.map entries ~f:(fun e ->
@@ -317,27 +316,20 @@ let decode ~lang ~dir =
             (Lib_name.to_string name)
         ]
   in
-  { name
-  ; version
-  ; entries
-  ; dir
-  ; sections =
-      (Section.Map.of_list sections |> function
-       | Ok x -> x
-       | Error (s, _, _) ->
-         User_error.raise ~loc
-           [ Pp.textf "The section %s appears multiple times"
-               (Section.to_string s)
-           ])
-  ; sites =
-      (Section.Site.Map.of_list sites |> function
-       | Ok x -> x
-       | Error (s, _, _) ->
-         User_error.raise ~loc:loc2
-           [ Pp.textf "The section %s appears multiple times"
-               (Section.Site.to_string s)
-           ])
-  }
+  let section_map of_list_map to_string sections =
+    match of_list_map sections ~f:(fun ((_, k), v) -> (k, v)) with
+    | Ok x -> x
+    | Error (s, ((loc, _), _), _) ->
+      User_error.raise ~loc
+        [ Pp.textf "The section %s appears multiple times" (to_string s) ]
+  in
+  let sections =
+    section_map Section.Map.of_list_map Section.to_string sections
+  in
+  let sites =
+    section_map Section.Site.Map.of_list_map Section.Site.to_string sites
+  in
+  { name; version; entries; dir; sections; sites }
 
 let () = Vfile.Lang.register Stanza.syntax ()
 

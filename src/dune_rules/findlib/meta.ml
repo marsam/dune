@@ -44,7 +44,7 @@ and to_dyn { name; entries } =
     ; ("entries", list dyn_of_entry entries)
     ]
 
-let rec filter_variable ~f t =
+let rec filter_variable t ~f =
   { t with
     entries =
       List.filter_map t.entries ~f:(function

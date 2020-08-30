@@ -31,7 +31,7 @@ and predicate =
 
 val to_dyn : t -> Dyn.t
 
-val filter_variable : f:(string -> bool) -> t -> t
+val filter_variable : t -> f:(string -> bool) -> t
 
 val parse_entries : Lexing.lexbuf -> entry list
 

@@ -26,8 +26,7 @@ Test embedding of sites locations information
   $ cat >a/dune <<EOF
   > (library
   >  (public_name a)
-  >  (libraries dune-site)
-  > )
+  >  (libraries dune-site))
   > (generate_module (module sites) (sites a))
   > EOF
 
@@ -40,8 +39,7 @@ Test embedding of sites locations information
   $ cat >b/dune <<EOF
   > (library
   >  (public_name b)
-  >  (libraries c.register dune-site)
-  > )
+  >  (libraries c.register dune-site))
   > (generate_module (module sites) (sites b))
   > (plugin (name c-plugins-b) (libraries b) (site (c plugins)))
   > (install (section (site (b data))) (files info.txt))
@@ -66,8 +64,7 @@ Test embedding of sites locations information
   > (library
   >  (public_name d)
   >  (libraries c.register dune-site non-existent-library)
-  >  (optional)
-  > )
+  >  (optional))
   > (generate_module (module sites) (sites d))
   > (plugin (name c-plugins-d) (libraries d) (site (c plugins)) (optional))
   > (install (section (site (d data))) (files info.txt))
@@ -98,8 +95,7 @@ Test embedding of sites locations information
   > (library
   >  (public_name c.register)
   >  (name c_register)
-  >  (modules c_register)
-  > )
+  >  (modules c_register))
   > (generate_module (module sites) (sourceroot) (plugins (c plugins)))
   > (rule
   >  (targets out.log)

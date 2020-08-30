@@ -216,7 +216,7 @@ let dune_site_plugins_code ~libs ~builtins =
       in
       pr buf "(%S,%s)"
         (Package.Name.to_string name)
-        (Dyn.to_string (Meta.dyn_of_t meta)));
+        (Dyn.to_string (Meta.to_dyn meta)));
   Buffer.contents buf
 
 let handle_special_libs cctx =

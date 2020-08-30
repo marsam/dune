@@ -29,7 +29,7 @@ and predicate =
   | Pos of string
   | Neg of string
 
-val dyn_of_t : t -> Dyn.t
+val to_dyn : t -> Dyn.t
 
 val filter_variable : f:(string -> bool) -> t -> t
 

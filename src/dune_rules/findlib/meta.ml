@@ -35,9 +35,9 @@ let rec dyn_of_entry (entry : entry) =
   match entry with
   | Comment c -> constr "Comment" [ string c ]
   | Rule r -> constr "Rule" [ dyn_of_rule r ]
-  | Package p -> constr "Package" [ dyn_of_t p ]
+  | Package p -> constr "Package" [ to_dyn p ]
 
-and dyn_of_t { name; entries } =
+and to_dyn { name; entries } =
   let open Dyn.Encoder in
   record
     [ ("name", option Lib_name.to_dyn name)

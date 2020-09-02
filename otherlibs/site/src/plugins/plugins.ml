@@ -7,9 +7,6 @@ let readdir dirs =
        (fun dir -> Array.to_list (Sys.readdir dir))
        (List.filter Sys.file_exists dirs))
 
-(* let file_exists dirs plugin =
- *   List.exists (fun d -> Sys.file_exists (Filename.concat d plugin)) dirs *)
-
 module type S = sig
   val paths : string list
 

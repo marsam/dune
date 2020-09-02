@@ -184,7 +184,7 @@ let build_info_code cctx ~libs ~api_version =
 let dune_site_code () =
   let buf = Buffer.create 5000 in
   pr buf "let hardcoded_ocamlpath = (Sys.opaque_identity %S)"
-    (Artifact_substitution.encode ~min_len:4096 HardcodedOcamlPath);
+    (Artifact_substitution.encode ~min_len:4096 Hardcoded_ocaml_path);
   pr buf "let stdlib_dir = (Sys.opaque_identity %S)"
     (Artifact_substitution.encode ~min_len:4096 (ConfigPath Stdlib));
   Buffer.contents buf

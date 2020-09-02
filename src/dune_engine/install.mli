@@ -9,7 +9,9 @@ module Dst : sig
   val to_string : t -> string
 end
 
-module SectionWithSite : sig
+(** Location for installation, containing the sections relative to the current
+    package, and sites of possibly other packages *)
+module Section_with_site : sig
   type t =
     | Section of Section.t
     | Site of
@@ -78,7 +80,7 @@ module Entry : sig
   val make : Section.t -> ?dst:string -> Path.Build.t -> Path.Build.t t
 
   val make_with_site :
-       SectionWithSite.t
+       Section_with_site.t
     -> ?dst:string
     -> (pkg:Package.Name.t -> site:DuneSection.Site.t -> Section.t)
     -> Path.Build.t
@@ -92,11 +94,12 @@ module Entry : sig
     Path.Build.t t -> paths:Section.Paths.t -> prefix:Path.t -> Path.Build.t t
 end
 
-module EntryWithSite : sig
+(** Same as Entry, but the destination can be in the site of a package *)
+module Entry_with_site : sig
   type 'src t =
     { src : 'src
     ; dst : Dst.t
-    ; section : SectionWithSite.t
+    ; section : Section_with_site.t
     }
 end
 

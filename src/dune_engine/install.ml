@@ -70,7 +70,7 @@ end = struct
         Some s
 end
 
-module SectionWithSite = struct
+module Section_with_site = struct
   type t =
     | Section of Section.t
     | Site of
@@ -263,7 +263,7 @@ module Entry = struct
 
   let make_with_site section ?dst get_section src =
     match section with
-    | SectionWithSite.Section section -> make section ?dst src
+    | Section_with_site.Section section -> make section ?dst src
     | Site { pkg; site } ->
       let section = get_section ~pkg ~site in
       let dst =
@@ -321,11 +321,11 @@ module Entry = struct
     }
 end
 
-module EntryWithSite = struct
+module Entry_with_site = struct
   type 'src t =
     { src : 'src
     ; dst : Dst.t
-    ; section : SectionWithSite.t
+    ; section : Section_with_site.t
     }
 end
 

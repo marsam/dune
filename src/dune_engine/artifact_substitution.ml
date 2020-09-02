@@ -36,10 +36,10 @@ type t =
   | Vcs_describe of Path.Source.t
   | Location of Section.t * Package.Name.t
   | ConfigPath of configpath
-  | HardcodedOcamlPath
+  | Hardcoded_ocaml_path
   | Repeat of int * string
 
-type hardcodedOcamlPath =
+type hardcoded_ocaml_path =
   | Hardcoded of Path.t list
   | Relocatable of Path.t
 
@@ -47,7 +47,7 @@ type conf =
   { get_vcs : Path.Source.t -> Vcs.t option
   ; get_location : Section.t -> Package.Name.t -> Path.t
   ; get_configPath : configpath -> Path.t option
-  ; hardcodedOcamlPath : hardcodedOcamlPath
+  ; hardcoded_ocaml_path : hardcoded_ocaml_path
   }
 
 let conf_of_context (context : Build_context.t option) =
@@ -57,7 +57,7 @@ let conf_of_context (context : Build_context.t option) =
     { get_vcs
     ; get_location = (fun _ _ -> Code_error.raise "no context available" [])
     ; get_configPath = (fun _ -> Code_error.raise "no context available" [])
-    ; hardcodedOcamlPath = Hardcoded []
+    ; hardcoded_ocaml_path = Hardcoded []
     }
   | Some context ->
     let get_location = Install.Section.Paths.get_local_location context.name in
@@ -65,7 +65,7 @@ let conf_of_context (context : Build_context.t option) =
       | SourceRoot -> Some (Path.source Path.Source.root)
       | Stdlib -> Some context.stdlib_dir
     in
-    let hardcodedOcamlPath =
+    let hardcoded_ocaml_path =
       let install_dir = Config.local_install_dir ~context:context.name in
       let install_dir = Path.build (Path.Build.relative install_dir "lib") in
       Hardcoded (install_dir :: context.default_ocamlpath)
@@ -73,13 +73,13 @@ let conf_of_context (context : Build_context.t option) =
     { get_vcs = File_tree.nearest_vcs
     ; get_location
     ; get_configPath
-    ; hardcodedOcamlPath
+    ; hardcoded_ocaml_path
     }
 
 let conf_for_install ~relocatable ~default_ocamlpath ~stdlib_dir ~prefix ~libdir
     ~mandir =
   let get_vcs = File_tree.nearest_vcs in
-  let hardcodedOcamlPath =
+  let hardcoded_ocaml_path =
     if relocatable then
       Relocatable prefix
     else
@@ -95,13 +95,13 @@ let conf_for_install ~relocatable ~default_ocamlpath ~stdlib_dir ~prefix ~libdir
     | SourceRoot -> None
     | Stdlib -> Some stdlib_dir
   in
-  { get_location; get_vcs; get_configPath; hardcodedOcamlPath }
+  { get_location; get_vcs; get_configPath; hardcoded_ocaml_path }
 
 let conf_dummy =
   { get_vcs = (fun _ -> None)
   ; get_location = (fun _ _ -> Path.root)
   ; get_configPath = (fun _ -> None)
-  ; hardcodedOcamlPath = Hardcoded []
+  ; hardcoded_ocaml_path = Hardcoded []
   }
 
 let to_dyn = function
@@ -116,14 +116,14 @@ let to_dyn = function
       | Stdlib -> "Stdlib"
     in
     Dyn.Variant ("ConfigPath", [ Dyn.Variant (v, []) ])
-  | HardcodedOcamlPath -> Dyn.Variant ("HardcodedOcamlPath", [])
+  | Hardcoded_ocaml_path -> Dyn.Variant ("Hardcoded_ocaml_path", [])
   | Repeat (n, s) -> Dyn.Variant ("Repeat", [ Int n; String s ])
 
 let eval t ~conf =
   let relocatable path =
     (* return a relative path to the install directory in case of relocatable
        instead of absolute path *)
-    match conf.hardcodedOcamlPath with
+    match conf.hardcoded_ocaml_path with
     | Hardcoded _ -> Path.to_absolute_filename path
     | Relocatable install -> Path.reach path ~from:install
   in
@@ -142,9 +142,9 @@ let eval t ~conf =
          (let open Option.O in
          let+ dir = conf.get_configPath d in
          relocatable dir))
-  | HardcodedOcamlPath ->
+  | Hardcoded_ocaml_path ->
     Fiber.return
-      ( match conf.hardcodedOcamlPath with
+      ( match conf.hardcoded_ocaml_path with
       | Relocatable _ -> "relocatable"
       | Hardcoded l ->
         let l = List.map l ~f:Path.to_absolute_filename in
@@ -176,7 +176,7 @@ let encode ?(min_len = 0) t =
           (String.length name) name
       | ConfigPath SourceRoot -> sprintf "configpath:sourceroot:"
       | ConfigPath Stdlib -> sprintf "configpath:stdlib:"
-      | HardcodedOcamlPath -> sprintf "hardcodedOcamlPath:"
+      | Hardcoded_ocaml_path -> sprintf "hardcoded_ocaml_path:"
       | Repeat (n, s) -> sprintf "repeat:%d:%d:%s" n (String.length s) s )
   in
   let len =
@@ -245,7 +245,7 @@ let decode s =
       Location (kind, name)
     | "configpath" :: "sourceroot" :: _ -> ConfigPath SourceRoot
     | "configpath" :: "stdlib" :: _ -> ConfigPath Stdlib
-    | "hardcodedOcamlPath" :: _ -> HardcodedOcamlPath
+    | "hardcoded_ocaml_path" :: _ -> Hardcoded_ocaml_path
     | "repeat" :: repeat :: rest ->
       Repeat (parse_int repeat, read_string_payload rest)
     | _ -> fail ()

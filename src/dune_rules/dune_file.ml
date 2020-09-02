@@ -844,7 +844,7 @@ end
 
 module Install_conf = struct
   type t =
-    { section : Install.SectionWithSite.t
+    { section : Install.Section_with_site.t
     ; files : File_binding.Unexpanded.t list
     ; package : Package.t
     ; enabled_if : Blang.t
@@ -852,7 +852,7 @@ module Install_conf = struct
 
   let decode =
     fields
-      (let+ section = field "section" Install.SectionWithSite.decode
+      (let+ section = field "section" Install.Section_with_site.decode
        and+ files = field "files" File_binding.Unexpanded.L.decode
        and+ package = Pkg.field "install"
        and+ enabled_if =

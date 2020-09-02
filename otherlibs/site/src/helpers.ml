@@ -52,7 +52,7 @@ module Hardcoded_ocaml_path = struct
     | None
     | Relocatable
     | Hardcoded of string list
-    | FindlibConfig of string
+    | Findlib_config of string
 
   let t =
     lazy
@@ -63,7 +63,7 @@ module Hardcoded_ocaml_path = struct
         let l = String.split_on_char '\000' s in
         match l with
         | "hardcoded" :: l -> Hardcoded l
-        | [ "findlibconfig"; p ] -> FindlibConfig p
+        | [ "findlibconfig"; p ] -> Findlib_config p
         | _ -> invalid_arg "dune error: hardcoded_ocamlpath parsing error" ) )
 end
 
@@ -125,7 +125,7 @@ let ocamlpath =
        | Hardcoded_ocaml_path.Relocatable ->
          [ Filename.concat (Lazy.force prefix) "lib" ]
        | Hardcoded_ocaml_path.Hardcoded l -> l
-       | Hardcoded_ocaml_path.FindlibConfig _ -> assert false
+       | Hardcoded_ocaml_path.Findlib_config _ -> assert false
      in
      env @ static)
 

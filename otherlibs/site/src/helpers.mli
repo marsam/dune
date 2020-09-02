@@ -26,7 +26,7 @@ module Hardcoded_ocaml_path : sig
     | None
     | Relocatable
     | Hardcoded of string list
-    | FindlibConfig of string
+    | Findlib_config of string
 
   val t : t Lazy.t
 end

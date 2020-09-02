@@ -191,7 +191,7 @@ end
 
 module Install_conf : sig
   type t =
-    { section : Install.SectionWithSite.t
+    { section : Install.Section_with_site.t
     ; files : File_binding.Unexpanded.t list
     ; package : Package.t
     ; enabled_if : Blang.t
@@ -380,14 +380,18 @@ module Deprecated_library_name : sig
   val old_public_name : t -> Lib_name.t
 end
 
+(** Stanza which generate a module for getting information from dune *)
 module Generate_module : sig
   type t =
     { loc : Loc.t
-    ; module_ : Module_name.t
-    ; sourceroot : bool
+    ; module_ : Module_name.t  (** name of the module to generate *)
+    ; sourceroot : bool  (** should the sourceroot of the project be provided *)
     ; relocatable : bool
+          (** should the fact that the installation use the relocatable mode *)
     ; sites : (Loc.t * Package.Name.t) list
+          (** list of the sites whose location should be given *)
     ; plugins : (Loc.t * (Package.Name.t * (Loc.t * Section.Site.t))) list
+          (** list of the sites for which a plugin system must be provided *)
     }
 end
 

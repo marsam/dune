@@ -11,12 +11,12 @@ type t =
   | Vcs_describe of Path.Source.t
   | Location of Section.t * Package.Name.t
   | ConfigPath of configpath
-  | HardcodedOcamlPath
+  | Hardcoded_ocaml_path
   | Repeat of int * string
       (** [Repeat (n, s)] evaluates to [s] repeated [n] times. This substitution
           is used for unit tests. *)
 
-type hardcodedOcamlPath =
+type hardcoded_ocaml_path =
   | Hardcoded of Path.t list
   | Relocatable of Path.t
 
@@ -24,7 +24,7 @@ type conf = private
   { get_vcs : Path.Source.t -> Vcs.t option
   ; get_location : Section.t -> Package.Name.t -> Path.t
   ; get_configPath : configpath -> Path.t option
-  ; hardcodedOcamlPath : hardcodedOcamlPath
+  ; hardcoded_ocaml_path : hardcoded_ocaml_path
         (** Initial prefix of installation when relocatable chosen *)
   }
 

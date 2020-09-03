@@ -498,32 +498,28 @@ let create ~(context : Context.t) ?host ~projects ~packages ~stanzas =
         (Stdune.Env.get context.env dune_dir_locations_var)
         ~default:""
     in
-    let v =
-      Package.Name.Map.foldi ~init:v packages
-        ~f:(fun package_name package init ->
-          let sections =
-            Section.Site.Map.fold ~init:Install.Section.Set.empty
-              package.Package.sites ~f:(fun section acc ->
-                Install.Section.Set.add acc section)
-          in
-          let paths =
-            Install.Section.Paths.make ~package:package_name
-              ~destdir:install_dir ()
-          in
-          Install.Section.Set.fold sections ~init ~f:(fun section acc ->
-              sprintf "%s%c%s%c%s%s"
-                (Package.Name.to_string package_name)
-                Stdune.Bin.path_sep
-                (Section.to_string section)
-                Stdune.Bin.path_sep
-                (Path.to_absolute_filename
-                   (Install.Section.Paths.get paths section))
-                ( if String.is_empty acc then
-                  acc
-                else
-                  sprintf "%c%s" Stdune.Bin.path_sep acc )))
-    in
-    v
+    Package.Name.Map.foldi ~init:v packages ~f:(fun package_name package init ->
+        let sections =
+          Section.Site.Map.fold ~init:Install.Section.Set.empty
+            package.Package.sites ~f:(fun section acc ->
+              Install.Section.Set.add acc section)
+        in
+        let paths =
+          Install.Section.Paths.make ~package:package_name ~destdir:install_dir
+            ()
+        in
+        Install.Section.Set.fold sections ~init ~f:(fun section acc ->
+            sprintf "%s%c%s%c%s%s"
+              (Package.Name.to_string package_name)
+              Stdune.Bin.path_sep
+              (Section.to_string section)
+              Stdune.Bin.path_sep
+              (Path.to_absolute_filename
+                 (Install.Section.Paths.get paths section))
+              ( if String.is_empty acc then
+                acc
+              else
+                sprintf "%c%s" Stdune.Bin.path_sep acc )))
   in
   let context_env =
     if String.is_empty env_dune_dir_locations then

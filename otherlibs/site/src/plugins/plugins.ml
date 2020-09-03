@@ -61,14 +61,14 @@ let rec get_plugin directory plugins requires entries =
     get_plugin directory plugins (value :: requires) entries
   | Rule _ :: entries -> get_plugin directory plugins requires entries
 
-exception LibraryNotFound of string
+exception Library_not_found of string
 
 let rec find_library ~rest meta =
   match rest with
   | [] -> meta
   | pkg :: rest ->
     let rec aux pkg = function
-      | [] -> raise (LibraryNotFound pkg)
+      | [] -> raise (Library_not_found pkg)
       | Meta_parser.Package { name = Some name; entries } :: _
         when String.equal name pkg ->
         find_library ~rest entries
@@ -159,7 +159,7 @@ let lookup_and_load_one_dir ~dir ~pkg =
 
 let split name =
   match String.split_on_char '.' name with
-  | [] -> raise (LibraryNotFound name)
+  | [] -> raise (Library_not_found name)
   | pkg :: rest -> (pkg, rest)
 
 let lookup_and_summarize dirs name =
@@ -168,7 +168,7 @@ let lookup_and_summarize dirs name =
     match dirs with
     | [] -> (
       List.assoc_opt pkg Data.builtin_library |> function
-      | None -> raise (LibraryNotFound name)
+      | None -> raise (Library_not_found name)
       | Some meta -> find_plugin ~dir:(Lazy.force Helpers.stdlib) ~rest meta )
     | dir :: dirs -> (
       let dir = Filename.concat dir pkg in

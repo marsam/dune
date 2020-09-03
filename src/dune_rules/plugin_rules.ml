@@ -19,9 +19,8 @@ let setup_rules ~sctx ~dir t =
   let meta = meta_file ~dir t in
   Build.delayed (fun () ->
       let requires =
-        match resolve_libs ~sctx t with
-        | Ok l -> List.map l ~f:(fun lib -> Lib_name.to_string (Lib.name lib))
-        | Error e -> raise e
+        resolve_libs ~sctx t |> Result.ok_exn
+        |> List.map ~f:(fun lib -> Lib_name.to_string (Lib.name lib))
       in
       let meta =
         { Meta.name = None

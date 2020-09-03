@@ -12,7 +12,7 @@ contents of all configuration files read by Dune and looks like:
 
 .. code:: scheme
 
-          (lang dune 2.8)
+   (lang dune 2.8)
 
 Additionally, they can contains the following stanzas.
 

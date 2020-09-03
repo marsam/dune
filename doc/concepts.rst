@@ -1051,7 +1051,7 @@ section of this page.
 .. _sites:
 
 Sites of a package
--------------------------------
+------------------
 
 When packages need additional resources outside their binary, their location
 could be hard to find. Moreover some packages could add resources to another
@@ -1075,9 +1075,9 @@ For instance:
 
 .. code:: scheme
 
-          (library
-           (name mylib)
-           (public_name mypackage.mylib))
+   (library
+    (name mylib)
+    (public_name mypackage.mylib))
 
 After you have added a public name to a library, Dune will know to
 install it as part of the package it is attached to.  Dune installs

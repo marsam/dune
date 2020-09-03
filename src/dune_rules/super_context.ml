@@ -225,27 +225,21 @@ let to_dyn t = Context.to_dyn t.context
 let host t = Option.value t.host ~default:t
 
 let get_site_of_packages t ~pkg ~site =
-  match Package.Name.Map.find t.packages pkg with
-  | Some p -> (
-    match Section.Site.Map.find p.sites site with
+  let find_site sites ~pkg ~site =
+    match Section.Site.Map.find sites site with
     | Some section -> section
     | None ->
       User_error.raise
         [ Pp.textf "Package %s doesn't define a site %s"
             (Package.Name.to_string pkg)
             (Section.Site.to_string site)
-        ] )
+        ]
+  in
+  match Package.Name.Map.find t.packages pkg with
+  | Some p -> find_site p.sites ~pkg ~site
   | None -> (
     match Findlib.find_root_package t.context.findlib pkg with
-    | Ok p -> (
-      match Section.Site.Map.find p.sites site with
-      | Some section -> section
-      | None ->
-        User_error.raise
-          [ Pp.textf "Package %s doesn't define a site %s"
-              (Package.Name.to_string pkg)
-              (Section.Site.to_string site)
-          ] )
+    | Ok p -> find_site p.sites ~pkg ~site
     | Error Not_found ->
       User_error.raise
         [ Pp.textf "The package %s is not found" (Package.Name.to_string pkg) ]

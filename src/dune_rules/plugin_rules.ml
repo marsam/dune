@@ -3,12 +3,13 @@ open Dune_file.Plugin
 open! Dune_engine
 
 let meta_file ~dir { name; libraries = _; site = _, (pkg, site); _ } =
-  let dir = Path.Build.relative dir ".site" in
-  let dir = Path.Build.relative dir (Package.Name.to_string pkg) in
-  let dir = Path.Build.relative dir (Section.Site.to_string site) in
-  let dir = Path.Build.relative dir (Package.Name.to_string name) in
-  let meta_file = Path.Build.relative dir "META" in
-  meta_file
+  Path.Build.L.relative dir
+    [ ".site"
+    ; Package.Name.to_string pkg
+    ; Section.Site.to_string site
+    ; Package.Name.to_string name
+    ; "META"
+    ]
 
 let resolve_libs ~sctx t =
   Result.List.map t.libraries
